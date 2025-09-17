@@ -93,18 +93,12 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     | map(select(.copyrightText and .copyrightText != "")) 
     | length' sbom.json)
     
-    # Get specific counts (fix the extraction)
-    GO_COUNT=$(echo "$ECOSYSTEM_DATA" | grep -E '^\s*[0-9]+\s+golang' | awk '{print $1}' || echo "0")
-    RUBY_COUNT=$(echo "$ECOSYSTEM_DATA" | grep -E '^\s*[0-9]+\s+gem' | awk '{print $1}' || echo "0")
-    
     # Create SBOM annotation
     cat > sbom_annotation.md << EOF
 ## 📊 SBOM Analysis Results
 
 ### Overview
 - **Total Dependencies**: ${TOTAL_DEPS}
-- **Go Modules**: ${GO_COUNT}
-- **Ruby Gems**: ${RUBY_COUNT}
 - **With Copyright**: ${WITH_COPYRIGHT}
 
 ### Ecosystem Breakdown
