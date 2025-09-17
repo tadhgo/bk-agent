@@ -42,7 +42,7 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
   
   echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${BUILDKITE_COMMIT}) on ${REF}"
 
-  curl -L \
+  if ! curl -L \
     -X POST \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -51,8 +51,11 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
       \"commit_sha\": \"${BUILDKITE_COMMIT}\",
       \"ref\": \"${REF}\",
       \"sarif\": \"${SARIF_DATA}\"
-    }" \
-    && echo "Upload successful! Check GitHub Security tab for results."
+    }"; then
+    echo "❌ Upload to GitHub failed!"
+  else
+    echo "Upload successful! Check GitHub Security tab for results."
+  fi
 
 else
   echo "⚠️  No GitHub token found - skipping upload to GitHub"
