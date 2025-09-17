@@ -33,7 +33,6 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
   REPO_PATH=$(echo "${BUILDKITE_REPO}" | sed 's|.*github\.com[:/]||' | sed 's|\.git$||')
   REPO_OWNER=${REPO_PATH%/*}
   REPO_NAME=${REPO_PATH##*/}
-  COMMIT_SHA="${BUILDKITE_COMMIT:0:8}"
 
   if [ "${BUILDKITE_PULL_REQUEST:-false}" != "false" ]; then
     REF="refs/pull/${BUILDKITE_PULL_REQUEST}/head"
@@ -41,7 +40,7 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     REF="refs/heads/${BUILDKITE_BRANCH}"
   fi
   
-  echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${COMMIT_SHA}) on ${REF}"
+  echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${BUILDKITE_COMMIT}) on ${REF}"
 
   curl -L \
     -X POST \
