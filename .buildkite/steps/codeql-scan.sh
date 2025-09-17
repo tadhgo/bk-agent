@@ -40,7 +40,7 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     REF="refs/heads/${BUILDKITE_BRANCH}"
   fi
   
-  echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${BUILDKITE_COMMIT}) on ${REF}"
+  echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${BUILDKITE_COMMIT}) on ${REF}..."
 
   curl -L \
     -X POST \
