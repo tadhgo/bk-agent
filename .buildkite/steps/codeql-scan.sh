@@ -21,7 +21,7 @@ else
   exit 1
 fi
 
-# Upload to Github
+# Upload to Github and fetch SBOM
 echo "--- Uploading results to Github..."
 if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
   echo "Github token found, attempting upload..."
@@ -57,25 +57,23 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     echo "✅ Upload successful! Check GitHub Security tab for results."
   fi
 
+  # Fetch SBOM
+  echo "--- Fetching SBOM from GitHub API..."
+  SBOM_FILE="sbom.json"
+
+  if ! curl -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "Authorization: Bearer ${GH_TOKEN}" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dependency-graph/sbom" \
+    -o "${SBOM_FILE}"; then
+    echo "⚠️ Failed to fetch SBOM from GitHub API"
+  else
+    echo "SBOM fetched successfully, uploading as Buildkite artifact..."
+    buildkite-agent artifact upload "${SBOM_FILE}"
+  fi
+
 else
-  echo "⚠️  No GitHub token found - skipping upload to GitHub"
+  echo "⚠️  No GitHub token found - skipping upload to GitHub and SBOM fetch"
   echo "Set GH_TOKEN secret in Buildkite to enable GitHub integration"
-fi
-
-# Fetch SBOM
-echo "--- Fetching SBOM from GitHub API..."
-SBOM_FILE="sbom.json"
-
-if curl -L \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${GH_TOKEN}" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dependency-graph/sbom" \
-  -o "${SBOM_FILE}"; then
-
-  echo "SBOM fetched successfully, uploading as Buildkite artifact..."
-  buildkite-agent artifact upload "${SBOM_FILE}"
-
-else
-  echo "⚠️ Failed to fetch SBOM from GitHub API"
 fi
