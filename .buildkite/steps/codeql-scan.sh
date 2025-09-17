@@ -69,8 +69,63 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     -o "${SBOM_FILE}"; then
     echo "⚠️ Failed to fetch SBOM from GitHub API"
   else
-    echo "SBOM fetched successfully, uploading as Buildkite artifact..."
+    echo "✅ SBOM fetched successfully, uploading as Buildkite artifact..."
     buildkite-agent artifact upload "${SBOM_FILE}"
+    echo "--- Analyzing SBOM..."
+    
+    # Extract metrics
+    TOTAL_DEPS=$(jq '.sbom.packages | length' sbom.json)
+    
+    # Count packages by ecosystem
+    ECOSYSTEM_DATA=$(jq -r '.sbom.packages[].externalRefs[]? 
+    | select(.referenceType=="purl") 
+    | .referenceLocator 
+    | split(":")[1]' sbom.json | sort | uniq -c | sort -nr)
+    
+    # License analysis
+    LICENSE_DATA=$(jq -r '.sbom.packages[]
+    | select(.licenseConcluded and .licenseConcluded != "NOASSERTION")
+    | .licenseConcluded' sbom.json | sort | uniq -c | sort -nr)
+    
+    # Dependencies with copyright info
+    WITH_COPYRIGHT=$(jq '.sbom.packages 
+    | map(select(.copyrightText and .copyrightText != "")) 
+    | length' sbom.json)
+    
+    # Get specific counts
+    GO_COUNT=$(echo "$ECOSYSTEM_DATA" | grep golang | awk '{print $1}' || echo "0")
+    RUBY_COUNT=$(echo "$ECOSYSTEM_DATA" | grep gem | awk '{print $1}' || echo "0")
+    
+    # Create SBOM annotation
+    cat > sbom_annotation.md << EOF
+## 📊 SBOM Analysis Results
+
+### Overview
+| Metric | Value |
+|--------|-------|
+| **Total Dependencies** | ${TOTAL_DEPS} |
+| **Go Modules** | ${GO_COUNT} |
+| **Ruby Gems** | ${RUBY_COUNT} |
+| **With Copyright** | ${WITH_COPYRIGHT} |
+
+### Ecosystem Breakdown
+\`\`\`
+$(echo "$ECOSYSTEM_DATA" | head -5)
+\`\`\`
+
+### License Distribution
+\`\`\`
+$(echo "$LICENSE_DATA" | head -5)
+\`\`\`
+
+---
+📦 Full SBOM available in build artifacts
+EOF
+
+    # Upload annotation
+    buildkite-agent annotate --context "sbom-analysis" --style "info" < sbom_annotation.md
+    
+    echo "✅ SBOM analysis complete - ${TOTAL_DEPS} dependencies analyzed"
   fi
 
 else
