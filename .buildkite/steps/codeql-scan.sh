@@ -42,3 +42,7 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
   fi
   
   echo "Uploading to ${REPO_OWNER}/${REPO_NAME} (${COMMIT_SHA:0:8}) on ${REF}"
+else
+  echo "⚠️  No GitHub token found - skipping upload to GitHub"
+  echo "Set GH_TOKEN secret in Buildkite to enable GitHub integration"
+fi
