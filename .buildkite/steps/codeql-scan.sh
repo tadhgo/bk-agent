@@ -102,12 +102,10 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
 ## 📊 SBOM Analysis Results
 
 ### Overview
-| Metric | Value |
-|--------|-------|
-| **Total Dependencies** | ${TOTAL_DEPS} |
-| **Go Modules** | ${GO_COUNT} |
-| **Ruby Gems** | ${RUBY_COUNT} |
-| **With Copyright** | ${WITH_COPYRIGHT} |
+- **Total Dependencies**: ${TOTAL_DEPS}
+- **Go Modules**: ${GO_COUNT}
+- **Ruby Gems**: ${RUBY_COUNT}
+- **With Copyright**: ${WITH_COPYRIGHT}
 
 ### Ecosystem Breakdown
 \`\`\`
