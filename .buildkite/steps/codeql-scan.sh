@@ -76,11 +76,12 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     # Extract metrics
     TOTAL_DEPS=$(jq '.sbom.packages | length' sbom.json)
     
-    # Count packages by ecosystem
+    # Count packages by ecosystem (extract just the ecosystem type, not full package names)
     ECOSYSTEM_DATA=$(jq -r '.sbom.packages[].externalRefs[]? 
     | select(.referenceType=="purl") 
     | .referenceLocator 
-    | split(":")[1]' sbom.json | sort | uniq -c | sort -nr)
+    | split(":")[1]
+    | split("/")[0]' sbom.json | sort | uniq -c | sort -nr)
     
     # License analysis
     LICENSE_DATA=$(jq -r '.sbom.packages[]
@@ -92,9 +93,9 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     | map(select(.copyrightText and .copyrightText != "")) 
     | length' sbom.json)
     
-    # Get specific counts
-    GO_COUNT=$(echo "$ECOSYSTEM_DATA" | grep golang | awk '{print $1}' || echo "0")
-    RUBY_COUNT=$(echo "$ECOSYSTEM_DATA" | grep gem | awk '{print $1}' || echo "0")
+    # Get specific counts (fix the extraction)
+    GO_COUNT=$(echo "$ECOSYSTEM_DATA" | grep -E '^\s*[0-9]+\s+golang' | awk '{print $1}' || echo "0")
+    RUBY_COUNT=$(echo "$ECOSYSTEM_DATA" | grep -E '^\s*[0-9]+\s+gem' | awk '{print $1}' || echo "0")
     
     # Create SBOM annotation
     cat > sbom_annotation.md << EOF
