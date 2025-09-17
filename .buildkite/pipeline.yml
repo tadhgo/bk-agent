@@ -2,7 +2,6 @@ agents:
   queue: "linux-hosted"
 
 steps:
-  - name: " --- :go::robot_face: CodeQL Scanning..."
+  - name: " :robot_face: CodeQL Scanning"
     key: security-scan
     command: .buildkite/steps/codeql-scan.sh
-    
