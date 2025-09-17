@@ -48,7 +48,7 @@ if GH_TOKEN=$(buildkite-agent secret get GH_TOKEN 2>/dev/null); then
     -H "Authorization: Bearer ${GH_TOKEN}" \
     "https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/code-scanning/sarifs" \
     -d "{
-      \"commit_sha\": \"${COMMIT_SHA}\",
+      \"commit_sha\": \"${BUILDKITE_COMMIT}\",
       \"ref\": \"${REF}\",
       \"sarif\": \"${SARIF_DATA}\"
     }" \
